@@ -39,7 +39,7 @@
       "verb": "DELETE",
       "url": "/users/1",
       "code": "204",
-      "response": "",
+      "response": "{}",
       "headers": ["application/json"]
     },
     {
