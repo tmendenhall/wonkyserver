@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+CURL_EXAMPLES.md
+CLAUDE.md
+prompt.md
+
+# Tests
+*_test.go
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Build artifacts
+wonkyserver
+*.exe
+
+# Misc
+.DS_Store

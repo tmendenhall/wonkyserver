@@ -1,0 +1,53 @@
+{
+  "endpoints": [
+    {
+      "verb": "GET",
+      "url": "/health",
+      "code": "200",
+      "response": "{\"status\":\"healthy\"}",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "GET",
+      "url": "/users",
+      "code": "200",
+      "response": "[{\"id\":1,\"name\":\"Alice\"},{\"id\":2,\"name\":\"Bob\"}]",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "GET",
+      "url": "/users/1",
+      "code": "200",
+      "response": "{\"id\":1,\"name\":\"Alice\",\"email\":\"alice@example.com\"}",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "POST",
+      "url": "/users",
+      "code": "201",
+      "response": "{\"id\":3,\"name\":\"Charlie\"}",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "PUT",
+      "url": "/users/1",
+      "code": "200",
+      "response": "{\"id\":1,\"name\":\"Alice Updated\"}",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "DELETE",
+      "url": "/users/1",
+      "code": "204",
+      "response": "",
+      "headers": ["application/json"]
+    },
+    {
+      "verb": "GET",
+      "url": "/slow-endpoint",
+      "code": "200",
+      "response": "{\"message\":\"This endpoint can simulate delays\"}",
+      "headers": ["application/json"]
+    }
+  ]
+}
