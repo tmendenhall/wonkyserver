@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,8 +11,11 @@ import (
 )
 
 // StartServer starts the HTTP server with the given configuration
-func StartServer(config *Config, port int) error {
-	handler := &Handler{config: config}
+func StartServer(config *Config, port int, wonkyPercentage int) error {
+	handler := &Handler{
+		config:          config,
+		wonkyPercentage: wonkyPercentage,
+	}
 
 	addr := fmt.Sprintf(":%d", port)
 	log.Printf("Starting server on port %d", port)
@@ -21,7 +25,8 @@ func StartServer(config *Config, port int) error {
 
 // Handler handles HTTP requests
 type Handler struct {
-	config *Config
+	config          *Config
+	wonkyPercentage int
 }
 
 // ServeHTTP handles incoming HTTP requests
@@ -39,7 +44,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get query parameters
 	query := r.URL.Query()
 
-	// Handle delay parameter
+	// Apply wonky behavior randomly
+	wonkyBehavior := applyWonkyBehavior(h.wonkyPercentage)
+	if wonkyBehavior != "" {
+		log.Printf("Wonky behavior applied: %s", wonkyBehavior)
+	}
+
+	// Handle delay parameter (explicit param takes precedence over wonky)
 	if delayStr := query.Get("delay"); delayStr != "" {
 		if delay, err := parseDelay(delayStr); err == nil {
 			log.Printf("Delaying response by %v", delay)
@@ -47,12 +58,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Printf("Invalid delay parameter: %v", err)
 		}
+	} else if wonkyBehavior == "delay5s" {
+		log.Printf("Wonky delay: 5 seconds")
+		time.Sleep(5 * time.Second)
 	}
 
 	// Determine response code
 	statusCode := 200
 
-	// Handle error parameter
+	// Handle error parameter (explicit params take precedence over wonky)
 	if query.Has("error") {
 		statusCode = 500
 		log.Printf("Error parameter detected, returning 500")
@@ -60,6 +74,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Per spec: "if the url matches then return a 405 to fast response code"
 		statusCode = 405
 		log.Printf("Slow parameter detected, returning 405")
+	} else if wonkyBehavior == "error" {
+		statusCode = 500
+		log.Printf("Wonky error: returning 500")
+	} else if wonkyBehavior == "slow" {
+		statusCode = 405
+		log.Printf("Wonky slow: returning 405")
 	} else {
 		// Parse configured status code
 		if code, err := strconv.Atoi(endpoint.Code); err == nil {
@@ -121,4 +141,24 @@ func parseDelay(delayStr string) (time.Duration, error) {
 	default:
 		return 0, fmt.Errorf("invalid delay unit: %s", unit)
 	}
+}
+
+// applyWonkyBehavior determines if wonky behavior should be applied
+// Returns one of: "error", "slow", "delay5s", or "" (no wonky behavior)
+func applyWonkyBehavior(percentage int) string {
+	if percentage == 0 {
+		return ""
+	}
+
+	// Generate random number 1-100
+	rand.Seed(time.Now().UnixNano())
+	roll := rand.Intn(100) + 1
+
+	if roll <= percentage {
+		// Randomly select one of three behaviors
+		behaviors := []string{"error", "slow", "delay5s"}
+		return behaviors[rand.Intn(3)]
+	}
+
+	return ""
 }

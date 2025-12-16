@@ -17,6 +17,9 @@ specify a configuration file.
 * port (optional)
 the port that the server will listen to with a default of 8888
 
+* wonky (optional)
+a value between 1 and 100 representing the percentage likelihood that any request will randomly get one of: error (500), delay of 5 seconds, or slow (405). Default is 0 (disabled).
+
 The application will log all messages to standard out.
 
 # input file format

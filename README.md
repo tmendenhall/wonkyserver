@@ -12,6 +12,7 @@ A configurable HTTP mock server written in Go. WonkyServer responds to HTTP requ
   - `error`: Force 500 error response
   - `slow`: Force 405 response
   - `delay`: Add response delay (milliseconds, seconds, or minutes)
+- Wonky mode: Randomly apply error/delay/slow behaviors based on percentage
 - Multi-architecture Docker support (AMD64 and ARM64)
 - Comprehensive logging to stdout
 
@@ -47,12 +48,13 @@ docker pull ghcr.io/yourusername/wonkyserver:latest
 ### Command Line Arguments
 
 ```bash
-wonkyserver --file <config.json> [--port <port>]
+wonkyserver --file <config.json> [--port <port>] [--wonky <percentage>]
 ```
 
 **Arguments:**
 - `--file`, `-f`: Path to configuration file (required)
 - `--port`, `-p`: Server port (default: 8888)
+- `--wonky`, `-w`: Percentage (1-100) likelihood of random error/delay/slow behavior (default: 0)
 - `--help`, `-h`: Show help message
 
 ### Configuration File Format
@@ -106,6 +108,43 @@ curl http://localhost:8888/api/users?delay=10s
 
 # Delay by 1 minute
 curl http://localhost:8888/api/users?delay=1M
+```
+
+### Wonky Mode
+
+Wonky mode introduces controlled chaos by randomly applying one of three behaviors to requests based on a configurable percentage:
+
+**Enable Wonky Mode:**
+```bash
+# 30% chance each request randomly gets error, 5s delay, or slow response
+wonkyserver --file config.json --wonky 30
+
+# 100% chance (always apply wonky behavior)
+wonkyserver --file config.json --wonky 100
+```
+
+**Behavior:**
+- When triggered, wonky mode randomly selects one of:
+  - **error**: Returns HTTP 500 status
+  - **slow**: Returns HTTP 405 status
+  - **delay5s**: Delays response by 5 seconds
+
+**Important Notes:**
+- Wonky percentage must be between 0-100 (0 disables wonky mode)
+- Explicit query parameters (`?error`, `?slow`, `?delay=...`) always override wonky behavior
+- Useful for chaos testing and simulating unreliable services
+- Wonky behavior is logged for debugging
+
+**Example:**
+```bash
+# Start server with 50% wonky chance
+wonkyserver --file example-config.json --wonky 50
+
+# Some requests will work normally, others will randomly fail/delay/slow
+curl http://localhost:8888/api/users  # Might be normal
+curl http://localhost:8888/api/users  # Might return 500
+curl http://localhost:8888/api/users  # Might delay 5 seconds
+curl http://localhost:8888/api/users  # Might return 405
 ```
 
 ## Docker Usage

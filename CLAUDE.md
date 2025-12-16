@@ -17,6 +17,7 @@ WonkyServer is a configurable HTTP mock server written in Go. It responds to HTT
   - `error`: Returns 500 instead of configured status code
   - `slow`: Returns 405 (fast response code intentionally incorrect per spec)
   - `delay`: Delays response by specified duration (e.g., `delay=100m`, `delay=10s`, `delay=1M`)
+- **Wonky Mode**: Global chaos testing feature that randomly applies error/delay/slow behaviors based on configurable percentage (0-100). Explicit query parameters always override wonky behavior.
 
 ### Configuration Format
 
@@ -38,6 +39,7 @@ Arguments use both long (`--arg`) and short (`-a`) forms, with short forms using
 - `--help` / `-h`: Display all commands and arguments
 - `--file` / `-f`: Required. Specify configuration file path
 - `--port` / `-p`: Optional. Server port (default: 8888)
+- `--wonky` / `-w`: Optional. Percentage (1-100) likelihood of random error/delay/slow behavior (default: 0)
 
 ## Development Commands
 
@@ -46,6 +48,9 @@ Arguments use both long (`--arg`) and short (`-a`) forms, with short forms using
 ```bash
 # Run the application
 go run . --file config.json --port 8888
+
+# Run with wonky mode (30% chaos)
+go run . --file config.json --wonky 30
 
 # Build the binary
 go build -o wonkyserver

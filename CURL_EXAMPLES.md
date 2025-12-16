@@ -142,3 +142,78 @@ curl -X POST http://localhost:8888/users \
   -d '{"name":"David","email":"david@example.com"}'
 # Expected: {"id":3,"name":"Charlie"} (configured response)
 ```
+
+## Wonky Mode Testing
+
+Wonky mode introduces controlled chaos for testing unreliable services.
+
+### Setup
+
+Start the server with wonky mode enabled:
+
+```bash
+# 50% chance of wonky behavior
+./wonkyserver --file example-config.json --wonky 50
+
+# 100% chance (always wonky)
+./wonkyserver --file example-config.json --wonky 100
+
+# Combined with custom port
+./wonkyserver --file example-config.json --port 9000 --wonky 30
+```
+
+### Testing Wonky Behavior
+
+With wonky mode enabled, each request has a chance to randomly exhibit one of three behaviors:
+
+```bash
+# Make multiple requests to see different behaviors
+curl http://localhost:8888/health  # Might return normally
+curl http://localhost:8888/health  # Might return 500 (error)
+curl http://localhost:8888/health  # Might delay 5 seconds
+curl http://localhost:8888/health  # Might return 405 (slow)
+```
+
+### Wonky with Explicit Parameters
+
+Explicit query parameters always override wonky behavior:
+
+```bash
+# Start server with 100% wonky
+./wonkyserver --file example-config.json --wonky 100
+
+# Explicit params override wonky - these always behave as specified
+curl http://localhost:8888/health?error    # Always 500
+curl http://localhost:8888/health?slow     # Always 405
+curl http://localhost:8888/health?delay=2s # Always delays 2 seconds
+```
+
+### Chaos Testing Example
+
+Simulate an unreliable service for testing error handling:
+
+```bash
+# Terminal 1: Start server with 40% wonky
+./wonkyserver --file example-config.json --wonky 40
+
+# Terminal 2: Test your client's resilience
+for i in {1..20}; do
+  echo "Request $i:"
+  curl -w "\nHTTP Status: %{http_code}\n" http://localhost:8888/users
+  echo "---"
+done
+```
+
+Expected output: Mix of successful responses, 500 errors, 405 responses, and delayed responses.
+
+### Logging
+
+When wonky mode is enabled, the server logs when wonky behavior is applied:
+
+```
+2025/01/15 10:30:00 Wonky mode enabled with 50% likelihood
+2025/01/15 10:30:05 Received GET request for /health
+2025/01/15 10:30:05 Wonky behavior applied: error
+2025/01/15 10:30:05 Wonky error: returning 500
+2025/01/15 10:30:05 Returned 500 status code
+```

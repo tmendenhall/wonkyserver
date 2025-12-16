@@ -19,7 +19,7 @@ func TestHandler_BasicRequest(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 	req := httptest.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()
 
@@ -51,7 +51,7 @@ func TestHandler_NotFound(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 	req := httptest.NewRequest("GET", "/notfound", nil)
 	w := httptest.NewRecorder()
 
@@ -74,7 +74,7 @@ func TestHandler_ErrorParameter(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 	req := httptest.NewRequest("GET", "/test?error", nil)
 	w := httptest.NewRecorder()
 
@@ -97,7 +97,7 @@ func TestHandler_SlowParameter(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 	req := httptest.NewRequest("GET", "/test?slow", nil)
 	w := httptest.NewRecorder()
 
@@ -120,7 +120,7 @@ func TestHandler_DelayParameter(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 
 	tests := []struct {
 		name          string
@@ -179,7 +179,7 @@ func TestHandler_MultipleEndpoints(t *testing.T) {
 		},
 	}
 
-	handler := &Handler{config: config}
+	handler := &Handler{config: config, wonkyPercentage: 0}
 
 	tests := []struct {
 		method         string
@@ -240,6 +240,98 @@ func TestParseDelay(t *testing.T) {
 				if result != tt.expected {
 					t.Errorf("Expected duration %v, got %v", tt.expected, result)
 				}
+			}
+		})
+	}
+}
+
+func TestApplyWonkyBehavior_ZeroPercentage(t *testing.T) {
+	result := applyWonkyBehavior(0)
+	if result != "" {
+		t.Errorf("Expected empty string for 0%%, got '%s'", result)
+	}
+}
+
+func TestApplyWonkyBehavior_HundredPercentage(t *testing.T) {
+	// With 100% wonky, we should always get a behavior
+	result := applyWonkyBehavior(100)
+
+	validBehaviors := map[string]bool{
+		"error":    true,
+		"slow":     true,
+		"delay5s":  true,
+	}
+
+	if !validBehaviors[result] {
+		t.Errorf("Expected one of [error, slow, delay5s], got '%s'", result)
+	}
+}
+
+func TestHandler_WonkyBehaviorDisabled(t *testing.T) {
+	config := &Config{
+		Endpoints: []Endpoint{
+			{
+				Verb:     "GET",
+				URL:      "/test",
+				Code:     "200",
+				Response: "{}",
+			},
+		},
+	}
+
+	handler := &Handler{
+		config:          config,
+		wonkyPercentage: 0,
+	}
+
+	// Make multiple requests to ensure wonky is never applied
+	for i := 0; i < 10; i++ {
+		req := httptest.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		if w.Code != 200 {
+			t.Errorf("With wonky disabled, expected status 200, got %d", w.Code)
+		}
+	}
+}
+
+func TestHandler_ExplicitParamsOverrideWonky(t *testing.T) {
+	config := &Config{
+		Endpoints: []Endpoint{
+			{
+				Verb:     "GET",
+				URL:      "/test",
+				Code:     "200",
+				Response: "{}",
+			},
+		},
+	}
+
+	handler := &Handler{
+		config:          config,
+		wonkyPercentage: 100, // Always apply wonky
+	}
+
+	tests := []struct {
+		name           string
+		queryParams    string
+		expectedStatus int
+	}{
+		{"explicit error overrides wonky", "?error", 500},
+		{"explicit slow overrides wonky", "?slow", 405},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/test"+tt.queryParams, nil)
+			w := httptest.NewRecorder()
+
+			handler.ServeHTTP(w, req)
+
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 		})
 	}
