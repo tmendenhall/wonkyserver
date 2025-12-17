@@ -18,12 +18,13 @@ COPY *.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o wonkyserver .
 
 # Final stage
-FROM alpine:latest
-
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates
+FROM alpine:3.19
 
 WORKDIR /app
+
+# Install ca-certificates for HTTPS
+# Update apk first to avoid QEMU emulation issues with multi-arch builds
+RUN apk update && apk --no-cache add ca-certificates && rm -rf /var/cache/apk/*
 
 # Copy binary from builder
 COPY --from=builder /app/wonkyserver .
