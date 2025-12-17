@@ -5,7 +5,7 @@ Only use Go default imports if at all possible. Ask me about adding additional l
 The application is intended to be run from a container. 
 
 The application has the following command line arguments.
-command line aguments are either --arg or -a with the shortened form taken from the first letter of the full argument.
+command line arguments are either --arg or -a with the shortened form taken from the first letter of the full argument.
 Take the first n letters if there is an overlap to make them unique.
 
 * help
