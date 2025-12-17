@@ -103,8 +103,8 @@ func TestHandler_SlowParameter(t *testing.T) {
 
 	handler.ServeHTTP(w, req)
 
-	if w.Code != 405 {
-		t.Errorf("Expected status 405, got %d", w.Code)
+	if w.Code != 429 {
+		t.Errorf("Expected status 429, got %d", w.Code)
 	}
 }
 
@@ -320,7 +320,7 @@ func TestHandler_ExplicitParamsOverrideWonky(t *testing.T) {
 		expectedStatus int
 	}{
 		{"explicit error overrides wonky", "?error", 500},
-		{"explicit slow overrides wonky", "?slow", 405},
+		{"explicit slow overrides wonky", "?slow", 429},
 	}
 
 	for _, tt := range tests {

@@ -64,10 +64,10 @@ curl http://localhost:8888/health?error
 ```
 
 ### Slow Response
-Force a 405 Method Not Allowed response:
+Force a 429 Too Many Requests response:
 ```bash
 curl http://localhost:8888/health?slow
-# Expected: HTTP 405 with {"status":"healthy"} body
+# Expected: HTTP 429 with {"status":"healthy"} body
 ```
 
 ### Delay Responses
@@ -101,7 +101,7 @@ time curl http://localhost:8888/health?delay=1s&error
 Delay with slow:
 ```bash
 time curl http://localhost:8888/users?delay=500m&slow
-# Expected: HTTP 405 after ~500ms delay
+# Expected: HTTP 429 after ~500ms delay
 ```
 
 ## 404 Not Found
@@ -171,7 +171,7 @@ With wonky mode enabled, each request has a chance to randomly exhibit one of th
 curl http://localhost:8888/health  # Might return normally
 curl http://localhost:8888/health  # Might return 500 (error)
 curl http://localhost:8888/health  # Might delay 5 seconds
-curl http://localhost:8888/health  # Might return 405 (slow)
+curl http://localhost:8888/health  # Might return 429 (slow)
 ```
 
 ### Wonky with Explicit Parameters
@@ -184,7 +184,7 @@ Explicit query parameters always override wonky behavior:
 
 # Explicit params override wonky - these always behave as specified
 curl http://localhost:8888/health?error    # Always 500
-curl http://localhost:8888/health?slow     # Always 405
+curl http://localhost:8888/health?slow     # Always 429
 curl http://localhost:8888/health?delay=2s # Always delays 2 seconds
 ```
 
@@ -204,7 +204,7 @@ for i in {1..20}; do
 done
 ```
 
-Expected output: Mix of successful responses, 500 errors, 405 responses, and delayed responses.
+Expected output: Mix of successful responses, 500 errors, 429 responses, and delayed responses.
 
 ### Logging
 

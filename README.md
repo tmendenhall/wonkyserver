@@ -10,7 +10,7 @@ A configurable HTTP mock server written in Go. WonkyServer responds to HTTP requ
 - Custom response headers
 - Query parameter modifiers:
   - `error`: Force 500 error response
-  - `slow`: Force 405 response
+  - `slow`: Force 429 response
   - `delay`: Add response delay (milliseconds, seconds, or minutes)
 - Wonky mode: Randomly apply error/delay/slow behaviors based on percentage
 - Multi-architecture Docker support (AMD64 and ARM64)
@@ -95,7 +95,7 @@ curl http://localhost:8888/api/users?error
 **Slow Response:**
 ```bash
 curl http://localhost:8888/api/users?slow
-# Returns 405 status code
+# Returns 429 status code
 ```
 
 **Delay Response:**
@@ -126,7 +126,7 @@ wonkyserver --file config.json --wonky 100
 **Behavior:**
 - When triggered, wonky mode randomly selects one of:
   - **error**: Returns HTTP 500 status
-  - **slow**: Returns HTTP 405 status
+  - **slow**: Returns HTTP 429 status
   - **delay5s**: Delays response by 5 seconds
 
 **Important Notes:**
@@ -144,7 +144,7 @@ wonkyserver --file example-config.json --wonky 50
 curl http://localhost:8888/api/users  # Might be normal
 curl http://localhost:8888/api/users  # Might return 500
 curl http://localhost:8888/api/users  # Might delay 5 seconds
-curl http://localhost:8888/api/users  # Might return 405
+curl http://localhost:8888/api/users  # Might return 429
 ```
 
 ## Docker Usage

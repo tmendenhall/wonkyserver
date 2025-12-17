@@ -71,15 +71,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		statusCode = 500
 		log.Printf("Error parameter detected, returning 500")
 	} else if query.Has("slow") {
-		// Per spec: "if the url matches then return a 405 to fast response code"
-		statusCode = 405
-		log.Printf("Slow parameter detected, returning 405")
+		// Return 429 Too Many Requests for rate limiting
+		statusCode = 429
+		log.Printf("Slow parameter detected, returning 429")
 	} else if wonkyBehavior == "error" {
 		statusCode = 500
 		log.Printf("Wonky error: returning 500")
 	} else if wonkyBehavior == "slow" {
-		statusCode = 405
-		log.Printf("Wonky slow: returning 405")
+		statusCode = 429
+		log.Printf("Wonky slow: returning 429")
 	} else {
 		// Parse configured status code
 		if code, err := strconv.Atoi(endpoint.Code); err == nil {

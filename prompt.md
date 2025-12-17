@@ -18,7 +18,7 @@ specify a configuration file.
 the port that the server will listen to with a default of 8888
 
 * wonky (optional)
-a value between 1 and 100 representing the percentage likelihood that any request will randomly get one of: error (500), delay of 5 seconds, or slow (405). Default is 0 (disabled).
+a value between 1 and 100 representing the percentage likelihood that any request will randomly get one of: error (500), delay of 5 seconds, or slow (429). Default is 0 (disabled).
 
 The application will log all messages to standard out.
 
@@ -46,7 +46,7 @@ The requesting url can have url parameters that change the response behavior.
 if the url matches then return a 500 instead of the specified resposne code
 
 * slow
-if the url matches then return a 405 to fast response code
+if the url matches then return a 429 Too Many Requests (rate limiting)
 
 * delay=amout unit
 if delay is specified then delay the response by the amount specified.

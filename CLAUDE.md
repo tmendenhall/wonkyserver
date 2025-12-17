@@ -15,7 +15,7 @@ WonkyServer is a configurable HTTP mock server written in Go. It responds to HTT
 - **Request Matching**: Routes requests by matching HTTP verb and URL path, returns configured responses
 - **Query Parameter Handlers**: Modifies response behavior based on special query parameters:
   - `error`: Returns 500 instead of configured status code
-  - `slow`: Returns 405 (fast response code intentionally incorrect per spec)
+  - `slow`: Returns 429 Too Many Requests (rate limiting)
   - `delay`: Delays response by specified duration (e.g., `delay=100m`, `delay=10s`, `delay=1M`)
 - **Wonky Mode**: Global chaos testing feature that randomly applies error/delay/slow behaviors based on configurable percentage (0-100). Explicit query parameters always override wonky behavior.
 
