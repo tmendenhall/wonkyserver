@@ -3,19 +3,14 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod files (will be created when user runs go mod init)
-COPY go.mod* ./
-
-# Download dependencies if go.mod exists
-RUN if [ -f go.mod ]; then go mod download; fi
-
 # Copy source code
 COPY *.go ./
 
-# Build the application
+# Initialize Go module and build the application
 # CGO_ENABLED=0 for static binary
 # -ldflags="-w -s" to reduce binary size
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o wonkyserver .
+RUN go mod init wonkyserver && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o wonkyserver .
 
 # Final stage
 FROM alpine:3.19
